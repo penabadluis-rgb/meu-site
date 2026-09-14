@@ -1,88 +1,25 @@
-\# Relatório Módulo 4 - CI/CD com Trivy Automático
+# RELATÓRIO - MÓDULO 4 - CI/CD e Segurança com Trivy
 
+**Autor:** luis penabad
+**Repositório:** meu-site
+**Data:** 10/09/2026
 
+## 1. Objetivo
+Implementar pipeline CI/CD com scan de vulnerabilidades usando Trivy Action e Deploy automático para EC2.
 
-\*\*Autor:\*\* Luis Penabad
+## 2. Incidente Detectado
 
-\*\*Repositório:\*\* penabadluis-rgb/meu-site
+Durante a execução dos workflows, foi identificado falha de segurança na Action `aquasecurity/trivy-action`.
 
-\*\*Data:\*\* 06/09/2026
+- **Versão vulnerável usada no módulo:** `v0.24.0` e `@0.35.0` sem o `v` (tags mutáveis)
+- **Problema:** No dia 14/09/2025 houve um incidente de supply chain. A tag `0.24.0` foi comprometida e versões sem prefixo `v` são consideradas mutáveis, podendo ser sobrescritas por atacantes.
+- **Erro observado:** Os workflows `#8` e `#9` falharam com `Process completed with exit code 1` devido ao `docker build` sem espaço e ao uso de tag não pinada.
 
+O arquivo `deploy.yml` também foi sobrescrito acidentalmente com o conteúdo do `trivy.yml`, causando duplicidade de workflows com mesmo nome.
 
+## 3. Correção Aplicada
 
-\## Objetivo
-
-Configurar pipeline CI/CD no GitHub Actions para escanear vulnerabilidades da imagem Docker com Trivy automaticamente a cada push.
-
-
-
-\## O que foi feito
-
-
-
-1\. Criei a pasta `.github/workflows/`
-
-2\. Criei o arquivo `trivy.yml` com o seguinte conteúdo:
-
-
-
-```yaml
-
-name: Modulo 4 - CI/CD Trivy automatico
-
-on: \[push]
-
-jobs:
-
-&#x20; scan:
-
-&#x20;   runs-on: ubuntu-latest
-
-&#x20;   steps:
-
-&#x20;     - uses: actions/checkout@v4
-
-&#x20;     - name: Build imagem Docker
-
-&#x20;       run: docker build -t meu-site:latest.
-
-&#x20;     - name: Scan com Trivy
-
-&#x20;       uses: aquasecurity/trivy-action@master
-
-&#x20;       with:
-
-&#x20;         image-ref: meu-site:latest
-
-&#x20;         severity: 'CRITICAL,HIGH'
-
-&#x20;         exit-code: '1'
-
-
-
-Erros encontrados e correção:
-
-Erro 1: Usei aquasecurity/trivy-action@0.24.0 e deu erro Unable to resolve action.
-
-Correção: Troquei para aquasecurity/trivy-action@master
-
-Erro 2: Arquivo YAML sem indentação (sem espaços).
-
-Correção: Corrigi indentação com 2 espaços.
-
-Resultado
-
-Pipeline executou com sucesso em 29s (succeeded).
-
-Set up job: OK
-
-Build imagem Docker: OK
-
-Scan com Trivy: OK
-
-Prints do Actions na pasta /prints
-
-Conclusão
-
-O CI/CD está funcionando e bloqueia o deploy se encontrar vulnerabilidades CRITICAL ou HIGH.
+### 3.1. Restauração do Deploy
+```bash
+git checkout 2810ba2 -- .github/workflows/deploy.yml
 
