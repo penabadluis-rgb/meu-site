@@ -1,28 +1,16 @@
-name: Deploy EC2
-
-on:
-  push:
-    branches: [ main ]
-
+name: Modulo 4 - CI/CD Trivy automatico
+on: [push]
 jobs:
-  deploy:
+  scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Build imagem Docker
+        run: docker build -t meu-site:latest.
+      - name: Scan com Trivy
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/meu-site 2>/dev/null || cd ~
-            if [ ! -d "meu-site/.git" ]; then
-              git clone https://github.com/penabadluis-rgb/meu-site.git meu-site
-              cd meu-site
-            else
-              cd meu-site
-              git pull origin main
-            fi
-            echo "Deploy feito em $(date)"
+          image-ref: 'meu-site:latest'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
