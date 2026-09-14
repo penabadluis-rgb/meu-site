@@ -1,4 +1,3 @@
-
 name: Modulo 4 - CI/CD Trivy automatico
 on: [push]
 jobs:
