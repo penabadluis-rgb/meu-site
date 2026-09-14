@@ -1,14 +1,16 @@
 name: Modulo 4 - CI/CD Trivy automatico
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build imagem Docker
-        run: docker build -t meu-site:latest.
+        run: docker build -t meu-site:latest .
       - name: Scan com Trivy
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: 'meu-site:latest'
           format: 'table'
